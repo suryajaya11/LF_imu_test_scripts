@@ -1,5 +1,6 @@
 import csv
 import matplotlib.pyplot as plt
+import math
 
 class xyz():
     def __init__(self):
@@ -72,3 +73,50 @@ def append_result_file(filename: str, orientation: orientation):
     with open(filename,'a', newline='') as fd:
         writer = csv.writer(fd)
         writer.writerow(datas)
+        
+def cumulative_average(new_data, old_average, new_data_index):
+    n = new_data_index # n starts from 1
+    new_data = old_average * (n-1)/n + new_data / n
+
+    return new_data
+
+
+def rad_to_deg(ori: xyz):
+    ori_rad = xyz()
+    ori_rad.x = ori.x * 180.0 * (1/math.pi)
+    ori_rad.y = ori.y * 180.0 * (1/math.pi)
+    ori_rad.z = ori.z * 180.0 * (1/math.pi)
+
+    return ori_rad
+
+def deg_to_rad(ori: xyz):
+    ori_deg = xyz()
+    ori_deg.x = ori.x * math.pi * (1/180.0)
+    ori_deg.y = ori.y * math.pi * (1/180.0)
+    ori_deg.z = ori.z * math.pi * (1/180.0)
+
+    return ori_deg
+
+
+def accel_to_xy(accel: xyz):
+    ori = orientation()
+
+    ori.x = math.atan2(accel.y, accel.z) * 57.2958
+    val = math.sqrt(accel.y**2 + accel.z**2)
+    ori.y = math.atan2(-accel.x, val) * 57.2958
+
+    return ori
+
+def gyro_local_to_global(gyro: xyz, ori_rad: xyz):
+    gy_g = xyz()
+
+    sin_x = math.sin(ori_rad.x)
+    sin_y = math.sin(ori_rad.y)
+    cos_x = math.cos(ori_rad.x)
+    cos_y = math.cos(ori_rad.y)
+
+    gy_g.x = gyro.x * cos_y + gyro.y * sin_x * sin_y + gyro.z * cos_x * sin_y
+    gy_g.y = gyro.y * cos_x + gyro.z * (-sin_x)
+    gy_g.z = gyro.x * (-sin_y) + gyro.y * sin_x * cos_y + gyro.z * cos_x * cos_y
+
+    return gy_g
