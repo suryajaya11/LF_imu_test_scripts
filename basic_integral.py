@@ -5,11 +5,12 @@ import matplotlib.pyplot as plt
 # sensor = read_sensor_file("raw_data/1x_move_yaw_pitch.csv")
 # sensor = read_sensor_file("raw_data/1x_roll.csv")
 # sensor = read_sensor_file("raw_data/2x_roll.csv")
-# sensor = read_sensor_file("raw_data/2x_yaw_pitch.csv")
+sensor = read_sensor_file("raw_data/2x_yaw_pitch.csv")
 # sensor_still = read_sensor_file("raw_data/stationary_tilt.csv")
-sensor_still = read_sensor_file("raw_data/stationary_3.csv")
+sensor_still = read_sensor_file("raw_data/stationary.csv")
+# sensor_still = read_sensor_file("raw_data/stationary_3.csv")
 
-sensor = read_sensor_file("raw_data/roll_pitch.csv")
+# sensor = read_sensor_file("raw_data/roll_pitch.csv")
 lsm_calib = xyz()
 mpu_calib = xyz()
 for index,data in enumerate(sensor_still, start=1):
@@ -61,6 +62,7 @@ print("mpu_y:",std_dev_mpu_gyro.y)
 print("mpu_z:",std_dev_mpu_gyro.z)
 ori_lsm = []
 ori_mpu = []
+ori_compf_lsm = []
 
 for index, data in enumerate(sensor):
     time_dif = 0.01
@@ -77,12 +79,28 @@ for index, data in enumerate(sensor):
     ori.z = last_z_lsm + gyro.z * time_dif
     ori_lsm.append(ori)
 
+    last_ori = xyz()
+    if(index != 0):
+        last_ori = ori_compf_lsm[-1]
+        
+        gyro = gyro_local_to_global(data.lsm.gyro, deg_to_rad(last_ori))
+    
+    new_ori = xyz()
+
+    alpha = 0.1
+    new_ori.x = (1- alpha) * (last_ori.x + gyro.x * time_dif) + alpha * ori.x
+    new_ori.y = (1- alpha) * (last_ori.y + gyro.y * time_dif) + alpha * ori.y
+    new_ori.z = (last_ori.z + gyro.z * time_dif)
+
+    ori_compf_lsm.append(new_ori)
+
     ori = accel_to_xy(data.mpu.accel)
     ori.time = data.time
     ori.z = last_z_mpu
     gyro = gyro_local_to_global(data.mpu.gyro, deg_to_rad(ori))
     ori.z = last_z_mpu + gyro.z * time_dif
     ori_mpu.append(ori)
+
 
 times = []
 x_lsm = []
@@ -98,7 +116,7 @@ for ori in ori_lsm:
     y_lsm.append(ori.y)
     z_lsm.append(ori.z)
 
-for ori in ori_mpu:  
+for ori in ori_compf_lsm:  
     x_mpu.append(ori.x)
     y_mpu.append(ori.y)
     z_mpu.append(ori.z)
