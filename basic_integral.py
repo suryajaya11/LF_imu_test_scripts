@@ -5,12 +5,14 @@ import matplotlib.pyplot as plt
 # sensor = read_sensor_file("raw_data/1x_move_yaw_pitch.csv")
 # sensor = read_sensor_file("raw_data/1x_roll.csv")
 # sensor = read_sensor_file("raw_data/2x_roll.csv")
-sensor = read_sensor_file("raw_data/2x_yaw_pitch.csv")
+# sensor = read_sensor_file("raw_data/2x_yaw_pitch.csv")
 # sensor_still = read_sensor_file("raw_data/stationary_tilt.csv")
-sensor_still = read_sensor_file("raw_data/stationary.csv")
-# sensor_still = read_sensor_file("raw_data/stationary_3.csv")
+# sensor_still = read_sensor_file("raw_data/stationary.csv")
+sensor_still = read_sensor_file("raw_data/stationary_3.csv")
 
 # sensor = read_sensor_file("raw_data/roll_pitch.csv")
+sensor = read_sensor_file("raw_data/1x_roll_pitch_fwd_side.csv")
+
 lsm_calib = xyz()
 mpu_calib = xyz()
 for index,data in enumerate(sensor_still, start=1):
@@ -131,4 +133,11 @@ plt.plot(times, x_mpu, color = "r")
 plt.plot(times, y_mpu, color = "g")
 plt.plot(times, z_mpu, color = "b")
 
+plt.figure()
+plt.plot(times, x_lsm, color = "r")
+plt.plot(times, x_mpu, color = "g")
+
+plt.figure()
+plt.plot(times, y_lsm, color = "r")
+plt.plot(times, y_mpu, color = "g")
 plt.show()
